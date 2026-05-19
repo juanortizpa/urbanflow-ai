@@ -4,7 +4,8 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
 import { TrendingUp, Users, MapPin, Search, Star, Activity, Zap, Clock } from 'lucide-react';
-import { analyticsData, places, trafficZones } from '../data/mockData';
+import { analyticsData, places } from '../data/mockData';
+import { useApp } from '../context/AppContext';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -20,6 +21,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Dashboard() {
   const [period, setPeriod] = useState('week');
+  const { liveTrafficZones } = useApp();
   const { kpis, trafficByHour, popularZones, weeklyActivity, categoryDistribution } = analyticsData;
 
   const kpiCards = [
@@ -180,7 +182,7 @@ export default function Dashboard() {
             Estado del Trafico
           </h3>
           <div className="space-y-3">
-            {trafficZones.map(zone => {
+            {liveTrafficZones.map(zone => {
               const color = zone.level === 'critical' ? '#ef4444' : zone.level === 'high' ? '#f97316' : zone.level === 'medium' ? '#f59e0b' : '#22c55e';
               return (
                 <div key={zone.id} className="p-3 rounded-xl" style={{ background: `${color}10`, border: `1px solid ${color}20` }}>

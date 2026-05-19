@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { CITY_CENTER, places, trafficZones, routes } from '../data/mockData';
+import { CITY_CENTER, places, routes } from '../data/mockData';
 import { useApp } from '../context/AppContext';
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -55,7 +55,7 @@ export default function InteractiveMap({
   showRoutes = false, selectedPlace = null, focusCoords = null,
   filterCategory = 'all', showHeatmap = false,
 }) {
-  const { mapLayer, userCoords, geoLoading, geoError } = useApp();
+  const { mapLayer, userCoords, geoLoading, geoError, liveTrafficZones, weatherLive, weatherLastUpdate } = useApp();
   const [selectedMarker, setSelectedMarker] = useState(null);
 
   const center = userCoords || CITY_CENTER;
@@ -78,7 +78,24 @@ export default function InteractiveMap({
         color: 'white', padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600,
         backdropFilter: 'blur(10px)',
       }}>
-        {geoLoading ? '📡 Obteniendo ubicación...' : geoError ? '📍 Ubicación por defecto' : '📍 Tu ubicación real'}
+        {geoLoading ? '📡 Obteniendo ubicación...' : geoError ? '📍 Cali, Colombia' : '📍 Tu ubicación real'}
+      </div>
+
+      {/* Live data badge */}
+      <div style={{
+        position: 'absolute', top: 42, left: 10, zIndex: 1000,
+        background: weatherLive ? 'rgba(16,185,129,0.9)' : 'rgba(100,116,139,0.85)',
+        color: 'white', padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+        backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', gap: 5,
+      }}>
+        <span style={{
+          display: 'inline-block', width: 7, height: 7, borderRadius: '50%',
+          background: weatherLive ? '#fff' : '#94a3b8',
+          boxShadow: weatherLive ? '0 0 6px #fff' : 'none',
+          animation: weatherLive ? 'livePulse 1.5s infinite' : 'none',
+        }} />
+        {weatherLive ? `EN VIVO · ${weatherLastUpdate}` : 'Conectando...'}
+        <style>{`@keyframes livePulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
       </div>
 
       <MapContainer
@@ -136,8 +153,8 @@ export default function InteractiveMap({
           </Marker>
         ))}
 
-        {/* Traffic zones */}
-        {showTraffic && trafficZones.map(zone => (
+        {/* Traffic zones — datos en vivo, se actualizan cada 60 s */}
+        {showTraffic && liveTrafficZones.map(zone => (
           <Circle
             key={zone.id}
             center={[zone.lat, zone.lng]}
