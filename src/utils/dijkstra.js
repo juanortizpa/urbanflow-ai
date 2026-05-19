@@ -43,20 +43,20 @@ export function dijkstra(graph, startNode, endNode) {
   };
 }
 
-// Construir grafo de ciudad simulado
+// Construir grafo de ciudad Cali
 export function buildCityGraph(trafficData = {}) {
   const baseGraph = {
-    'Terminal Norte': { 'Av. Universitaria': 2.1, 'Zona Industrial': 5.3 },
-    'Av. Universitaria': { 'Terminal Norte': 2.1, 'Hospital Regional': 1.8, 'Plaza Central': 3.2 },
-    'Hospital Regional': { 'Av. Universitaria': 1.8, 'Barrio Las Palmas': 2.4, 'Mercado Sur': 3.1 },
-    'Plaza Central': { 'Av. Universitaria': 3.2, 'Parque Central': 0.8, 'Centro Comercial': 2.6, 'Barrio Las Palmas': 1.9 },
-    'Parque Central': { 'Plaza Central': 0.8, 'Museo Ciudad': 0.5 },
-    'Museo Ciudad': { 'Parque Central': 0.5, 'Plaza Central': 1.2 },
-    'Barrio Las Palmas': { 'Hospital Regional': 2.4, 'Plaza Central': 1.9, 'Centro Comercial': 1.5 },
-    'Centro Comercial': { 'Plaza Central': 2.6, 'Barrio Las Palmas': 1.5, 'Zona Industrial': 4.2 },
-    'Mercado Sur': { 'Hospital Regional': 3.1, 'Terminal Sur': 1.4 },
-    'Terminal Sur': { 'Mercado Sur': 1.4, 'Zona Industrial': 6.1 },
-    'Zona Industrial': { 'Terminal Norte': 5.3, 'Centro Comercial': 4.2, 'Terminal Sur': 6.1 },
+    'Terminal Cali': { 'Av. Colombia': 2.3, 'Zona Industrial Acopi': 5.8 },
+    'Av. Colombia': { 'Terminal Cali': 2.3, 'Hospital Valle': 2.0, 'Plaza Caicedo': 3.1 },
+    'Hospital Valle': { 'Av. Colombia': 2.0, 'El Peñón': 2.8, 'Galería Alameda': 3.4 },
+    'Plaza Caicedo': { 'Av. Colombia': 3.1, 'Parque del Perro': 3.2, 'Chipichape': 5.2, 'El Peñón': 2.2 },
+    'Parque del Perro': { 'Plaza Caicedo': 3.2, 'Museo La Tertulia': 1.8 },
+    'Museo La Tertulia': { 'Parque del Perro': 1.8, 'Plaza Caicedo': 2.6 },
+    'El Peñón': { 'Hospital Valle': 2.8, 'Plaza Caicedo': 2.2, 'Chipichape': 3.5 },
+    'Chipichape': { 'Plaza Caicedo': 5.2, 'El Peñón': 3.5, 'Zona Industrial Acopi': 4.8 },
+    'Galería Alameda': { 'Hospital Valle': 3.4, 'Unicentro': 7.1 },
+    'Unicentro': { 'Galería Alameda': 7.1, 'Zona Industrial Acopi': 8.0 },
+    'Zona Industrial Acopi': { 'Terminal Cali': 5.8, 'Chipichape': 4.8, 'Unicentro': 8.0 },
   };
 
   // Ajustar pesos segun trafico

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const FALLBACK = [-4.0383, -79.2113]; // Loja, Ecuador
+const FALLBACK = [3.4516, -76.5325]; // Cali, Colombia — Plaza de Caicedo
 
 export function useGeolocation() {
   const [coords, setCoords] = useState(null);

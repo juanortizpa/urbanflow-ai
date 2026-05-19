@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Navigation, Clock, DollarSign, TrendingUp, Zap, MapPin, Bus, Bike, Car, ArrowRight } from 'lucide-react';
 import { calculateOptimalRoute, predictTraffic } from '../utils/dijkstra';
-import { trafficZones, routes as busRoutes } from '../data/mockData';
+import { routes as busRoutes } from '../data/mockData';
+import { useApp } from '../context/AppContext';
 import InteractiveMap from '../components/InteractiveMap';
 
 const nodes = [
-  'Terminal Norte', 'Av. Universitaria', 'Hospital Regional', 'Plaza Central',
-  'Parque Central', 'Museo Ciudad', 'Barrio Las Palmas', 'Centro Comercial',
-  'Mercado Sur', 'Terminal Sur', 'Zona Industrial',
+  'Terminal Cali', 'Av. Colombia', 'Hospital Valle', 'Plaza Caicedo',
+  'Parque del Perro', 'Museo La Tertulia', 'El Peñón', 'Chipichape',
+  'Galería Alameda', 'Unicentro', 'Zona Industrial Acopi',
 ];
 
 const transportIcons = { bus: Bus, bike: Bike, taxi: Car };
 const transportColors = { bus: '#3b82f6', bike: '#10b981', taxi: '#f59e0b' };
 
 export default function SmartRoutes() {
-  const [from, setFrom] = useState('Terminal Norte');
-  const [to, setTo] = useState('Plaza Central');
+  const { liveTrafficZones } = useApp();
+  const [from, setFrom] = useState('Terminal Cali');
+  const [to, setTo] = useState('Plaza Caicedo');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [trafficPrediction, setTrafficPrediction] = useState(null);
@@ -29,7 +31,7 @@ export default function SmartRoutes() {
   const calculateRoute = () => {
     setLoading(true);
     setTimeout(() => {
-      const route = calculateOptimalRoute(from, to, trafficZones);
+      const route = calculateOptimalRoute(from, to, liveTrafficZones);
       setResult(route);
       setLoading(false);
     }, 800);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Layers, MapPin, Activity, Navigation, Thermometer, Shield, Music } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import InteractiveMap from '../components/InteractiveMap';
-import { trafficZones, events } from '../data/mockData';
+import { events } from '../data/mockData';
 
 const layers = [
   { id: 'traffic', label: 'Trafico', icon: Activity, color: '#f59e0b' },
@@ -19,7 +19,7 @@ const mapStyles = [
 ];
 
 export default function MapPage() {
-  const { mapLayer, setMapLayer } = useApp();
+  const { mapLayer, setMapLayer, liveTrafficZones } = useApp();
   const [activeLayers, setActiveLayers] = useState(new Set(['traffic', 'places']));
   const [filterCategory, setFilterCategory] = useState('all');
 
@@ -104,7 +104,7 @@ export default function MapPage() {
               Zonas de Trafico
             </h3>
             <div className="space-y-2">
-              {trafficZones.map(zone => (
+              {liveTrafficZones.map(zone => (
                 <div key={zone.id} className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full flex-shrink-0"
                     style={{ background: trafficLevelColor[zone.level] }} />
