@@ -156,11 +156,39 @@ export const events = [
 ];
 
 export const trafficZones = [
-  { id: 1, name: 'Centro Histórico', lat: 3.4516, lng: -76.5325, level: 'high', congestion: 78, description: 'Alta congestión en horas pico — Carrera 1 con Calle 15' },
-  { id: 2, name: 'El Peñón - Granada', lat: 3.4680, lng: -76.5330, level: 'medium', congestion: 48, description: 'Tráfico moderado en Avenida 6N' },
-  { id: 3, name: 'Avenida Sexta Norte', lat: 3.4750, lng: -76.5270, level: 'critical', congestion: 91, description: 'Tráfico crítico — accidente reportado en Av. 6N con Calle 44' },
-  { id: 4, name: 'Ciudad Jardín - Univalle', lat: 3.3780, lng: -76.5310, level: 'low', congestion: 22, description: 'Flujo normal en zona sur' },
-  { id: 5, name: 'Zona Industrial Acopi', lat: 3.5050, lng: -76.4950, level: 'medium', congestion: 58, description: 'Congestión por camiones de carga' },
+  // Centro
+  { id: 1,  name: 'Centro Histórico',        lat: 3.4516, lng: -76.5325, level: 'high',     congestion: 78, description: 'Alta congestión en horas pico — Carrera 1 con Calle 15' },
+  { id: 2,  name: 'San Nicolás',             lat: 3.4470, lng: -76.5290, level: 'medium',   congestion: 55, description: 'Tráfico moderado en Carrera 8 con Calle 12' },
+  { id: 3,  name: 'La Merced',               lat: 3.4500, lng: -76.5360, level: 'high',     congestion: 70, description: 'Congestión típica en horas pico del centro' },
+  { id: 4,  name: 'Alameda',                 lat: 3.4565, lng: -76.5445, level: 'medium',   congestion: 50, description: 'Flujo moderado — mercado activo toda la mañana' },
+  // Norte
+  { id: 5,  name: 'El Peñón',               lat: 3.4680, lng: -76.5334, level: 'medium',   congestion: 48, description: 'Tráfico moderado en Avenida 6N' },
+  { id: 6,  name: 'Granada',                 lat: 3.4710, lng: -76.5310, level: 'medium',   congestion: 52, description: 'Zona restaurantera — mayor flujo en la noche' },
+  { id: 7,  name: 'Avenida Sexta Norte',     lat: 3.4750, lng: -76.5270, level: 'critical', congestion: 91, description: 'Tráfico crítico en Av. 6N con Calle 44' },
+  { id: 8,  name: 'Versalles',               lat: 3.4820, lng: -76.5240, level: 'low',      congestion: 28, description: 'Flujo normal en zona residencial norte' },
+  { id: 9,  name: 'Santa Mónica',            lat: 3.4900, lng: -76.5150, level: 'medium',   congestion: 45, description: 'Congestión moderada en Calle 70' },
+  { id: 10, name: 'Chipichape',              lat: 3.4960, lng: -76.5100, level: 'high',     congestion: 74, description: 'Alta afluencia al mall — mayor en fin de semana' },
+  { id: 11, name: 'Unicentro Norte',         lat: 3.5020, lng: -76.5050, level: 'medium',   congestion: 60, description: 'Congestión en Carrera 100 con Av. Colombia' },
+  { id: 12, name: 'Acopi - Yumbo',           lat: 3.5080, lng: -76.4950, level: 'medium',   congestion: 58, description: 'Congestión por camiones de carga industrial' },
+  // Sur
+  { id: 13, name: 'Ciudad Jardín',           lat: 3.3780, lng: -76.5310, level: 'low',      congestion: 22, description: 'Flujo normal en zona residencial sur' },
+  { id: 14, name: 'Univalle - Meléndez',     lat: 3.3750, lng: -76.5380, level: 'medium',   congestion: 44, description: 'Tráfico universitario en horas pico académicas' },
+  { id: 15, name: 'Tequendama',              lat: 3.4120, lng: -76.5380, level: 'medium',   congestion: 53, description: 'Congestión habitual en Av. Colombia' },
+  { id: 16, name: 'El Ingenio',              lat: 3.3650, lng: -76.5250, level: 'low',      congestion: 30, description: 'Flujo tranquilo en residencial sur' },
+  { id: 17, name: 'Pance - Portales',        lat: 3.3450, lng: -76.5180, level: 'low',      congestion: 18, description: 'Vía a Pance — mayor flujo en fines de semana' },
+  // Oriente
+  { id: 18, name: 'Aguablanca',              lat: 3.4150, lng: -76.4950, level: 'medium',   congestion: 47, description: 'Tráfico moderado en el distrito de Aguablanca' },
+  { id: 19, name: 'Alfonso López',           lat: 3.4200, lng: -76.4880, level: 'medium',   congestion: 55, description: 'Congestión moderada en Cra. 50 con Calle 25' },
+  { id: 20, name: 'Marroquín',               lat: 3.3980, lng: -76.4920, level: 'low',      congestion: 35, description: 'Flujo bajo en horario no pico' },
+  { id: 21, name: 'Puerto Tejada - Acceso',  lat: 3.3800, lng: -76.4700, level: 'low',      congestion: 25, description: 'Acceso vía Palmira — flujo constante' },
+  // Occidente
+  { id: 22, name: 'Terrón Colorado',         lat: 3.4700, lng: -76.5550, level: 'high',     congestion: 65, description: 'Vía estrecha hacia los cerros — hora pico crítica' },
+  { id: 23, name: 'San Antonio',             lat: 3.4580, lng: -76.5430, level: 'medium',   congestion: 42, description: 'Barrio bohemio — tráfico moderado en fin de semana' },
+  { id: 24, name: 'La Tertulia - Río Cali',  lat: 3.4616, lng: -76.5485, level: 'low',      congestion: 30, description: 'Bulevar del Río — flujo controlado' },
+  { id: 25, name: 'Juanchito',               lat: 3.4620, lng: -76.4960, level: 'high',     congestion: 80, description: 'Congestión alta en noches de rumba — viernes y sábado' },
+  { id: 26, name: 'Buenaventura - Acceso',   lat: 3.4400, lng: -76.5600, level: 'medium',   congestion: 48, description: 'Vía al Pacífico — flujo constante de carga' },
+  { id: 27, name: 'Palmira - Km 17',         lat: 3.4800, lng: -76.4500, level: 'medium',   congestion: 56, description: 'Vía Cali-Palmira — alto flujo vehicular' },
+  { id: 28, name: 'Jamundí - Acceso Sur',    lat: 3.3300, lng: -76.5400, level: 'low',      congestion: 20, description: 'Acceso a Jamundí — flujo tranquilo' },
 ];
 
 export const routes = [
