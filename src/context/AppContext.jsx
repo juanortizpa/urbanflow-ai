@@ -1,4 +1,14 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import {
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+} from 'firebase/auth';
+import {
+  doc, getDoc, setDoc, updateDoc,
+  arrayUnion, arrayRemove, serverTimestamp,
+} from 'firebase/firestore';
+import { auth, db, googleProvider } from '../firebase/config';
 import { places, events, alerts, weatherConditions, trafficZones as initialTrafficZones } from '../data/mockData';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { predictTraffic } from '../utils/dijkstra';
@@ -10,11 +20,8 @@ const WTTR_URL = 'https://wttr.in/Cali%20Colombia?format=j1';
 const WEATHER_CODE_MAP = {
   113: 'sunny', 116: 'partly_cloudy', 119: 'cloudy', 122: 'cloudy',
   143: 'cloudy', 176: 'rainy', 179: 'rainy', 182: 'rainy', 185: 'rainy',
-  200: 'rainy', 227: 'cloudy', 230: 'cloudy', 248: 'cloudy', 260: 'cloudy',
-  263: 'rainy', 266: 'rainy', 281: 'rainy', 284: 'rainy', 293: 'rainy',
-  296: 'rainy', 299: 'rainy', 302: 'rainy', 305: 'rainy', 308: 'rainy',
-  311: 'rainy', 314: 'rainy', 317: 'rainy', 320: 'rainy', 323: 'rainy',
-  386: 'rainy', 389: 'rainy',
+  200: 'rainy', 263: 'rainy', 266: 'rainy', 293: 'rainy', 296: 'rainy',
+  299: 'rainy', 302: 'rainy', 305: 'rainy', 308: 'rainy', 386: 'rainy',
 };
 
 async function fetchLiveWeather() {
@@ -55,18 +62,16 @@ function computeLiveTraffic(zones) {
   });
 }
 
-export function AppProvider({ children }) {
-  const [user] = useState({
-    uid: 'demo-user-001',
-    displayName: 'Alex Rodriguez',
-    email: 'alex@urbanflow.ai',
-    photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex',
-    preferences: { budget: 'medium', interests: ['cafes', 'restaurants', 'culture'], transport: 'bus' },
-    isPremium: true,
-  });
+const DEFAULT_PREFERENCES = { budget: 'medium', interests: ['cafes', 'restaurants', 'culture'], transport: 'bus' };
 
-  const [favorites, setFavorites] = useState([2, 4, 7]);
-  const [searchHistory, setSearchHistory] = useState(['salsa', 'café cerca', 'parques', 'sushi']);
+export function AppProvider({ children }) {
+  // Auth state
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // App state
+  const [favorites, setFavorites] = useState([]);
+  const [searchHistory, setSearchHistory] = useState([]);
   const [activeFilters, setActiveFilters] = useState({ category: 'all', priceRange: 'all', rating: 0 });
   const [mapLayer, setMapLayer] = useState('standard');
   const [notifications, setNotifications] = useState(alerts);
@@ -82,25 +87,101 @@ export function AppProvider({ children }) {
 
   const currentHour = new Date().getHours();
 
+  // ── Firebase Auth ───────────────────────────────────────────────────────────
+
+  const login = useCallback(async () => {
+    await signInWithPopup(auth, googleProvider);
+  }, []);
+
+  const logout = useCallback(async () => {
+    await signOut(auth);
+    setUser(null);
+    setFavorites([]);
+    setSearchHistory([]);
+  }, []);
+
+  // Listen to auth state and load Firestore profile
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const ref = doc(db, 'users', firebaseUser.uid);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+          // First sign-in: create profile document
+          const profile = {
+            displayName: firebaseUser.displayName,
+            email: firebaseUser.email,
+            photoURL: firebaseUser.photoURL,
+            isPremium: false,
+            preferences: DEFAULT_PREFERENCES,
+            favorites: [],
+            searchHistory: [],
+            createdAt: serverTimestamp(),
+          };
+          await setDoc(ref, profile);
+          setFavorites([]);
+          setSearchHistory([]);
+          setUser({ uid: firebaseUser.uid, ...profile });
+        } else {
+          const data = snap.data();
+          setFavorites(data.favorites || []);
+          setSearchHistory(data.searchHistory || []);
+          setUser({
+            uid: firebaseUser.uid,
+            displayName: data.displayName || firebaseUser.displayName,
+            email: firebaseUser.email,
+            photoURL: data.photoURL || firebaseUser.photoURL,
+            isPremium: data.isPremium || false,
+            preferences: data.preferences || DEFAULT_PREFERENCES,
+          });
+        }
+      } else {
+        setUser(null);
+      }
+      setAuthLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  // ── Firestore actions ───────────────────────────────────────────────────────
+
+  const addToFavorites = useCallback(async (placeId) => {
+    if (!user) return;
+    const ref = doc(db, 'users', user.uid);
+    const isAlready = favorites.includes(placeId);
+    setFavorites(prev => isAlready ? prev.filter(id => id !== placeId) : [...prev, placeId]);
+    await updateDoc(ref, {
+      favorites: isAlready ? arrayRemove(placeId) : arrayUnion(placeId),
+    });
+  }, [user, favorites]);
+
+  const addToSearchHistory = useCallback(async (query) => {
+    if (!user) return;
+    setSearchHistory(prev => {
+      const filtered = prev.filter(h => h !== query);
+      return [query, ...filtered].slice(0, 10);
+    });
+    // Keep Firestore history in sync (max 10 entries via client-side slice)
+    const ref = doc(db, 'users', user.uid);
+    await updateDoc(ref, { searchHistory: arrayUnion(query) });
+  }, [user]);
+
+  const updateUserProfile = useCallback(async (data) => {
+    if (!user) return;
+    const ref = doc(db, 'users', user.uid);
+    await updateDoc(ref, data);
+    setUser(prev => ({ ...prev, ...data }));
+  }, [user]);
+
+  // ── Utilities ───────────────────────────────────────────────────────────────
+
   const getTimeContext = useCallback(() => {
     if (currentHour >= 6 && currentHour < 12) return 'morning';
     if (currentHour >= 12 && currentHour < 17) return 'afternoon';
     if (currentHour >= 17 && currentHour < 21) return 'evening';
     return 'night';
   }, [currentHour]);
-
-  const addToFavorites = useCallback((placeId) => {
-    setFavorites(prev =>
-      prev.includes(placeId) ? prev.filter(id => id !== placeId) : [...prev, placeId]
-    );
-  }, []);
-
-  const addToSearchHistory = useCallback((query) => {
-    setSearchHistory(prev => {
-      const filtered = prev.filter(h => h !== query);
-      return [query, ...filtered].slice(0, 10);
-    });
-  }, []);
 
   const dismissNotification = useCallback((id) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
@@ -111,10 +192,10 @@ export function AppProvider({ children }) {
     setTimeout(() => setActiveAlert(null), 4000);
   }, []);
 
-  // Fetch live weather on mount and every 10 minutes
+  // ── Live weather (wttr.in) ──────────────────────────────────────────────────
+
   useEffect(() => {
     let cancelled = false;
-
     async function loadWeather() {
       try {
         const live = await fetchLiveWeather();
@@ -131,13 +212,13 @@ export function AppProvider({ children }) {
         }
       }
     }
-
     loadWeather();
-    const weatherInterval = setInterval(loadWeather, 10 * 60 * 1000);
-    return () => { cancelled = true; clearInterval(weatherInterval); };
+    const interval = setInterval(loadWeather, 10 * 60 * 1000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
-  // Update live traffic every 60 seconds based on current hour
+  // ── Live traffic (every 60 s) ───────────────────────────────────────────────
+
   useEffect(() => {
     const interval = setInterval(() => {
       setLiveTrafficZones(computeLiveTraffic(initialTrafficZones));
@@ -145,8 +226,12 @@ export function AppProvider({ children }) {
     return () => clearInterval(interval);
   }, []);
 
+  // ── Context value ───────────────────────────────────────────────────────────
+
   const value = {
-    user,
+    user, authLoading,
+    login, logout,
+    updateUserProfile,
     favorites, addToFavorites,
     searchHistory, addToSearchHistory,
     activeFilters, setActiveFilters,

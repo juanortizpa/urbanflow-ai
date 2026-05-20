@@ -6,28 +6,31 @@ import { analyticsData } from '../data/mockData';
 const interests = ['cafes', 'restaurants', 'bars', 'parks', 'culture', 'sports', 'shopping', 'desserts'];
 
 export default function Profile() {
-  const { user, setUser, favorites, places, searchHistory, notifications } = useApp();
+  const { user, updateUserProfile, favorites, places, searchHistory, notifications } = useApp();
   const [activeTab, setActiveTab] = useState('profile');
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ displayName: user.displayName, email: user.email });
 
   const favoritePlaces = places.filter(p => favorites.includes(p.id));
 
-  const toggleInterest = (interest) => {
-    setUser(prev => ({
-      ...prev,
-      preferences: {
-        ...prev.preferences,
-        interests: prev.preferences.interests.includes(interest)
-          ? prev.preferences.interests.filter(i => i !== interest)
-          : [...prev.preferences.interests, interest],
-      },
-    }));
+  const toggleInterest = async (interest) => {
+    const current = user.preferences.interests;
+    const updated = current.includes(interest)
+      ? current.filter(i => i !== interest)
+      : [...current, interest];
+    await updateUserProfile({ preferences: { ...user.preferences, interests: updated } });
   };
 
-  const handleSave = () => {
-    setUser(prev => ({ ...prev, ...form }));
+  const handleSave = async () => {
+    setSaving(true);
+    await updateUserProfile({ displayName: form.displayName });
+    setSaving(false);
     setEditing(false);
+  };
+
+  const setBudget = async (budget) => {
+    await updateUserProfile({ preferences: { ...user.preferences, budget } });
   };
 
   const stats = [
@@ -128,7 +131,9 @@ export default function Profile() {
             </div>
             {editing && (
               <div className="flex gap-3 mt-4">
-                <button onClick={handleSave} className="btn-primary text-sm py-2">Guardar cambios</button>
+                <button onClick={handleSave} disabled={saving} className="btn-primary text-sm py-2">
+                  {saving ? 'Guardando...' : 'Guardar cambios'}
+                </button>
                 <button onClick={() => setEditing(false)} className="btn-ghost text-sm py-2">Cancelar</button>
               </div>
             )}
@@ -180,7 +185,7 @@ export default function Profile() {
             <h3 className="text-white font-semibold mb-4">Presupuesto Preferido</h3>
             <div className="grid grid-cols-3 gap-3">
               {['low', 'medium', 'high'].map(b => (
-                <button key={b} onClick={() => setUser(prev => ({ ...prev, preferences: { ...prev.preferences, budget: b } }))}
+                <button key={b} onClick={() => setBudget(b)}
                   className={`p-4 rounded-xl text-center transition-all ${
                     user.preferences.budget === b ? 'bg-blue-500/20 border border-blue-500/30 text-blue-400' : 'bg-white/5 text-dark-400 hover:text-white border border-white/8'
                   }`}>
