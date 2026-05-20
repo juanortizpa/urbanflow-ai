@@ -305,6 +305,37 @@ export function AppProvider({ children }) {
     const notifs = [];
     const hour = new Date().getHours();
 
+    // ── Recordatorios de agenda (próximos 3 días) ──────────────────────────
+    if (agenda.length > 0) {
+      const now = new Date();
+      const cutoff = new Date(now);
+      cutoff.setDate(cutoff.getDate() + 3);
+      cutoff.setHours(23, 59, 59, 999);
+
+      for (const item of agenda) {
+        if (notifs.length >= 3) break;
+        try {
+          const dt = new Date(`${item.date}T${item.time}`);
+          if (isNaN(dt.getTime()) || dt < now) continue;
+          if (dt > cutoff) continue;
+          const diffH = Math.round((dt - now) / 3600000);
+          const label =
+            diffH < 1  ? 'en menos de 1h' :
+            diffH < 24 ? `hoy a las ${item.time}` :
+            diffH < 48 ? `mañana a las ${item.time}` :
+            `en ${Math.ceil(diffH / 24)} días`;
+          notifs.push({
+            id: `ag_${item.id}`,
+            type: 'agenda',
+            severity: diffH < 24 ? 'critical' : 'warning',
+            message: `📅 Agenda: ${item.place.name} — ${label}`,
+            time: label,
+            icon: 'calendar',
+          });
+        } catch { /* skip malformed */ }
+      }
+    }
+
     // Alerta de zona critica de trafico
     const critical = liveTrafficZones.filter(z => z.level === 'critical');
     if (critical.length > 0) {
@@ -368,8 +399,8 @@ export function AppProvider({ children }) {
       });
     }
 
-    return notifs.slice(0, 5);
-  }, [liveTrafficZones, currentWeather]);
+    return notifs.slice(0, 6);
+  }, [liveTrafficZones, currentWeather, agenda]);
 
   // ── Context value ───────────────────────────────────────────────────────────
 

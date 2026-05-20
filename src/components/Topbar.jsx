@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, Search, Bell, Cloud, Sun, CloudRain, Wind, X, MapPin, Loader } from 'lucide-react';
+import { Menu, Search, Bell, Cloud, Sun, CloudRain, X, MapPin, Loader, CalendarDays } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { searchPlaces } from '../utils/searchEngine';
 
@@ -137,24 +137,48 @@ export default function Topbar({ onMenuToggle }) {
         </button>
 
         {showNotifications && (
-          <div className="absolute right-0 top-12 w-80 z-50 glass-card py-2 animate-slide-up">
-            <div className="px-4 py-2 border-b border-white/5">
-              <p className="text-white font-semibold text-sm">Alertas Inteligentes</p>
+          <div className="absolute right-0 top-12 w-[340px] z-50 animate-slide-up"
+            style={{ background: 'rgba(8,16,32,0.97)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/6">
+              <p className="text-white font-bold text-sm">Alertas Inteligentes</p>
+              <span className="text-xs px-2 py-0.5 rounded-full font-bold"
+                style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}>
+                {notifications.length}
+              </span>
             </div>
-            {notifications.slice(0, 4).map(n => (
-              <div key={n.id} className="flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
-                <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                  n.severity === 'critical' ? 'bg-red-400' :
-                  n.severity === 'warning' ? 'bg-yellow-400' : 'bg-blue-400'
-                }`} />
-                <div>
-                  <p className="text-white text-xs">{n.message}</p>
-                  <p className="text-dark-500 text-xs mt-0.5">Hace {n.time}</p>
+            <div className="py-1 max-h-80 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <p className="text-slate-500 text-xs text-center py-6">Sin alertas activas</p>
+              ) : notifications.map(n => (
+                <div key={n.id}
+                  className="flex items-start gap-3 px-4 py-2.5 hover:bg-white/4 transition-colors cursor-default"
+                  onClick={() => { if (n.type === 'agenda') { navigate('/agenda'); setShowNotifications(false); } }}>
+                  <div className={`flex-shrink-0 mt-0.5 w-6 h-6 rounded-lg flex items-center justify-center text-xs ${
+                    n.type === 'agenda' ? 'bg-purple-500/15' :
+                    n.severity === 'critical' ? 'bg-red-500/15' :
+                    n.severity === 'warning' ? 'bg-yellow-500/15' : 'bg-blue-500/15'
+                  }`}>
+                    {n.type === 'agenda' ? <CalendarDays size={12} className="text-purple-400" /> :
+                     n.severity === 'critical' ? <span className="text-red-400">!</span> :
+                     n.severity === 'warning' ? <span className="text-yellow-400">⚠</span> :
+                     <span className="text-blue-400">i</span>}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-xs leading-relaxed">{n.message}</p>
+                    <p className="text-slate-600 text-xs mt-0.5">{n.time}</p>
+                  </div>
+                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${
+                    n.severity === 'critical' ? 'bg-red-400 animate-pulse' :
+                    n.severity === 'warning' ? 'bg-yellow-400' : 'bg-blue-400'
+                  }`} />
                 </div>
-              </div>
-            ))}
-            <div className="px-4 pt-2 border-t border-white/5">
-              <button className="text-blue-400 text-xs">Ver todas las alertas</button>
+              ))}
+            </div>
+            <div className="px-4 py-2.5 border-t border-white/6">
+              <button onClick={() => { navigate('/agenda'); setShowNotifications(false); }}
+                className="text-purple-400 text-xs hover:text-purple-300 flex items-center gap-1.5 transition-colors">
+                <CalendarDays size={12} /> Ver mi agenda
+              </button>
             </div>
           </div>
         )}
