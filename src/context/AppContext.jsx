@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   onAuthStateChanged,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
 } from 'firebase/auth';
 import {
@@ -90,7 +91,15 @@ export function AppProvider({ children }) {
   // ── Firebase Auth ───────────────────────────────────────────────────────────
 
   const login = useCallback(async () => {
-    await signInWithPopup(auth, googleProvider);
+    // signInWithRedirect evita el error Cross-Origin-Opener-Policy de Chrome
+    await signInWithRedirect(auth, googleProvider);
+  }, []);
+
+  // Captura el resultado cuando Google redirige de vuelta a la app
+  useEffect(() => {
+    getRedirectResult(auth).catch(() => {
+      // Warnings de COOP son no fatales — se ignoran silenciosamente
+    });
   }, []);
 
   const logout = useCallback(async () => {
