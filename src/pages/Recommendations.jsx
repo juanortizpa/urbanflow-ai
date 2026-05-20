@@ -37,7 +37,7 @@ function AIReasonForPlace(place, context) {
 const PAGE_SIZE = 12;
 
 export default function Recommendations() {
-  const { places, user, currentWeather, timeContext, searchHistory, userCoords, favorites } = useApp();
+  const { places, user, currentWeather, timeContext, searchHistory, userCoords, favorites, openPlaceDetail } = useApp();
   const [activeTab, setActiveTab] = useState('ai');
   const [dayPlanConfig, setDayPlanConfig] = useState({ budget: 'medium', hours: 4, interests: ['cafes', 'restaurants'] });
   const [dayPlan, setDayPlan] = useState(null);
@@ -264,8 +264,9 @@ export default function Recommendations() {
 
               <div className="space-y-3">
                 {dayPlan.plan.map(({ order, place, startTime, endTime, duration }) => (
-                  <div key={place.id} className="flex items-center gap-4 p-3 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div key={place.id} className="flex items-center gap-4 p-3 rounded-xl cursor-pointer hover:bg-white/6 transition-colors"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                    onClick={() => openPlaceDetail(place)}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm"
                       style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: 'white' }}>
                       {order}

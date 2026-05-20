@@ -2,8 +2,9 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar, Music, Utensils, Dumbbell, Globe, MapPin, Clock,
-  DollarSign, AlertTriangle, Search, Navigation, Star, ChevronRight,
+  DollarSign, AlertTriangle, Search, Navigation, Star, CalendarPlus, X,
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -81,8 +82,33 @@ function createEventIcon(category) {
 
 export default function Events() {
   const navigate = useNavigate();
+  const { addToAgenda, user, showAlert } = useApp();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedEvent, setExpandedEvent] = useState(null);
+  const [schedDate, setSchedDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [schedTime, setSchedTime] = useState('20:00');
+  const [schedNotes, setSchedNotes] = useState('');
+
+  const handleAgendarEvent = (event) => {
+    if (!user) { showAlert('Inicia sesión para agendar eventos', 'info'); return; }
+    // Convert event to place-like object for agenda
+    const placeProxy = {
+      id: `event_${event.id}`,
+      name: event.title,
+      category: 'culture',
+      image: event.image,
+      rating: event.rating,
+      price: event.price,
+      lat: event.lat,
+      lng: event.lng,
+      description: event.description,
+    };
+    addToAgenda(placeProxy, schedDate, schedTime, schedNotes);
+    showAlert(`"${event.title}" agregado a tu agenda`, 'success');
+    setExpandedEvent(null);
+    setSchedNotes('');
+  };
 
   const filtered = useMemo(() => {
     let list = CALI_EVENTS;
@@ -264,11 +290,56 @@ export default function Events() {
                           onMouseOut={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}>
                           <Navigation size={12} /> Como llegar
                         </button>
-                        <button className="flex items-center gap-1 text-xs py-2 px-3 rounded-xl font-medium text-slate-400 hover:text-white transition-colors"
-                          style={{ background: 'rgba(255,255,255,0.05)' }}>
-                          <ChevronRight size={13} />
+                        <button
+                          onClick={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)}
+                          className="flex items-center gap-1.5 text-xs py-2 px-3 rounded-xl font-medium transition-all"
+                          style={{
+                            background: expandedEvent === event.id ? 'rgba(139,92,246,0.2)' : 'rgba(139,92,246,0.1)',
+                            color: '#a78bfa',
+                            border: '1px solid rgba(139,92,246,0.3)',
+                          }}>
+                          <CalendarPlus size={12} />
+                          Agendar
                         </button>
                       </div>
+
+                      {/* Inline scheduler */}
+                      {expandedEvent === event.id && (
+                        <div className="mt-3 p-3 rounded-xl animate-slide-up"
+                          style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)' }}>
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-white text-xs font-semibold flex items-center gap-1.5">
+                              <CalendarPlus size={12} className="text-purple-400" /> Planifica tu asistencia
+                            </p>
+                            <button onClick={() => setExpandedEvent(null)} className="text-slate-600 hover:text-slate-400">
+                              <X size={12} />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 mb-2">
+                            <div>
+                              <label className="text-slate-500 text-[10px] mb-1 block">Fecha</label>
+                              <input type="date" value={schedDate}
+                                onChange={e => setSchedDate(e.target.value)}
+                                min={new Date().toISOString().slice(0, 10)}
+                                className="input-field h-8 text-xs py-1 w-full" />
+                            </div>
+                            <div>
+                              <label className="text-slate-500 text-[10px] mb-1 block">Hora</label>
+                              <input type="time" value={schedTime}
+                                onChange={e => setSchedTime(e.target.value)}
+                                className="input-field h-8 text-xs py-1 w-full" />
+                            </div>
+                          </div>
+                          <input type="text" value={schedNotes}
+                            onChange={e => setSchedNotes(e.target.value)}
+                            placeholder="Notas (ej: ir con amigos...)"
+                            className="input-field h-8 text-xs py-1 w-full mb-2" />
+                          <button onClick={() => handleAgendarEvent(event)}
+                            className="btn-primary w-full flex items-center justify-center gap-1.5 text-xs py-2">
+                            <CalendarPlus size={12} /> Confirmar en agenda
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

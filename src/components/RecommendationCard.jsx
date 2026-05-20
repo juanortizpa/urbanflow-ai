@@ -1,8 +1,8 @@
-import { Brain, Star, DollarSign, Sparkles, Heart, Clock } from 'lucide-react';
+import { Brain, Star, DollarSign, Sparkles, Heart, Clock, Info } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function RecommendationCard({ place, reason, score, rank }) {
-  const { addToFavorites, favorites, user } = useApp();
+  const { addToFavorites, favorites, user, openPlaceDetail } = useApp();
   const isFav = favorites.includes(place.id);
 
   const scoreColor = score >= 80 ? '#4ade80' : score >= 60 ? '#facc15' : '#94a3b8';
@@ -14,7 +14,7 @@ export default function RecommendationCard({ place, reason, score, rank }) {
   };
 
   return (
-    <div className="glass-card-hover p-4 flex gap-4 relative overflow-hidden">
+    <div className="glass-card-hover p-4 flex gap-4 relative overflow-hidden" onClick={() => openPlaceDetail(place)}>
       {/* Rank badge */}
       {rank <= 3 && (
         <div className="absolute top-3 right-10">
