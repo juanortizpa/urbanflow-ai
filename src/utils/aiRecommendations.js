@@ -108,7 +108,8 @@ export function getAIRecommendations(places, context) {
     };
   });
 
-  return scored.sort((a, b) => b.aiScore - a.aiScore).slice(0, 10);
+  // No slice — la paginacion la maneja el componente
+  return scored.sort((a, b) => b.aiScore - a.aiScore);
 }
 
 function getDistance(coords, place) {

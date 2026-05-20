@@ -247,9 +247,23 @@ export function AppProvider({ children }) {
   // ── Real Cali places from OpenStreetMap (Overpass API) ─────────────────────
 
   useEffect(() => {
-    fetchCaliPlaces().then(osm => {
-      if (osm.length > 0) setOsmPlaces(osm);
-    });
+    let cancelled = false;
+    async function loadOSM() {
+      const osm = await fetchCaliPlaces();
+      if (!cancelled && osm.length > 0) {
+        setOsmPlaces(osm);
+        console.log(`[UrbanFlow] ${osm.length} lugares OSM cargados`);
+      } else if (!cancelled && osm.length === 0) {
+        // Reintentar en 30 segundos si fallo
+        setTimeout(async () => {
+          if (cancelled) return;
+          const retry = await fetchCaliPlaces();
+          if (!cancelled && retry.length > 0) setOsmPlaces(retry);
+        }, 30000);
+      }
+    }
+    loadOSM();
+    return () => { cancelled = true; };
   }, []);
 
   // ── Live traffic (every 60 s) ───────────────────────────────────────────────
