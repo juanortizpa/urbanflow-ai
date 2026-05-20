@@ -1,8 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   onAuthStateChanged,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   signOut,
 } from 'firebase/auth';
 import {
@@ -91,7 +90,7 @@ export function AppProvider({ children }) {
   // ── Firebase Auth ───────────────────────────────────────────────────────────
 
   const login = useCallback(async () => {
-    await signInWithRedirect(auth, googleProvider);
+    await signInWithPopup(auth, googleProvider);
   }, []);
 
   const logout = useCallback(async () => {
@@ -101,66 +100,47 @@ export function AppProvider({ children }) {
     setSearchHistory([]);
   }, []);
 
-  // Auth init: primero procesa el redirect result de Google (si lo hay),
-  // luego registra el listener. Sin este await, onAuthStateChanged puede
-  // disparar con null antes de que Firebase procese el resultado del redirect.
+  // Escucha cambios de auth y sincroniza perfil con Firestore
   useEffect(() => {
-    let cancelled = false;
-    let unsub;
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const ref = doc(db, 'users', firebaseUser.uid);
+        const snap = await getDoc(ref);
 
-    async function init() {
-      try {
-        await getRedirectResult(auth);
-      } catch {
-        // errores COOP / red no son fatales
-      }
-      if (cancelled) return;
-
-      unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-        if (cancelled) return;
-        if (firebaseUser) {
-          const ref = doc(db, 'users', firebaseUser.uid);
-          const snap = await getDoc(ref);
-          if (cancelled) return;
-
-          if (!snap.exists()) {
-            const profile = {
-              displayName: firebaseUser.displayName,
-              email: firebaseUser.email,
-              photoURL: firebaseUser.photoURL,
-              isPremium: false,
-              preferences: DEFAULT_PREFERENCES,
-              favorites: [],
-              searchHistory: [],
-              createdAt: serverTimestamp(),
-            };
-            await setDoc(ref, profile);
-            if (cancelled) return;
-            setFavorites([]);
-            setSearchHistory([]);
-            setUser({ uid: firebaseUser.uid, ...profile });
-          } else {
-            const data = snap.data();
-            setFavorites(data.favorites || []);
-            setSearchHistory(data.searchHistory || []);
-            setUser({
-              uid: firebaseUser.uid,
-              displayName: data.displayName || firebaseUser.displayName,
-              email: firebaseUser.email,
-              photoURL: data.photoURL || firebaseUser.photoURL,
-              isPremium: data.isPremium || false,
-              preferences: data.preferences || DEFAULT_PREFERENCES,
-            });
-          }
+        if (!snap.exists()) {
+          const profile = {
+            displayName: firebaseUser.displayName,
+            email: firebaseUser.email,
+            photoURL: firebaseUser.photoURL,
+            isPremium: false,
+            preferences: DEFAULT_PREFERENCES,
+            favorites: [],
+            searchHistory: [],
+            createdAt: serverTimestamp(),
+          };
+          await setDoc(ref, profile);
+          setFavorites([]);
+          setSearchHistory([]);
+          setUser({ uid: firebaseUser.uid, ...profile });
         } else {
-          setUser(null);
+          const data = snap.data();
+          setFavorites(data.favorites || []);
+          setSearchHistory(data.searchHistory || []);
+          setUser({
+            uid: firebaseUser.uid,
+            displayName: data.displayName || firebaseUser.displayName,
+            email: firebaseUser.email,
+            photoURL: data.photoURL || firebaseUser.photoURL,
+            isPremium: data.isPremium || false,
+            preferences: data.preferences || DEFAULT_PREFERENCES,
+          });
         }
-        setAuthLoading(false);
-      });
-    }
-
-    init();
-    return () => { cancelled = true; if (unsub) unsub(); };
+      } else {
+        setUser(null);
+      }
+      setAuthLoading(false);
+    });
+    return unsub;
   }, []);
 
   // ── Firestore actions ───────────────────────────────────────────────────────
