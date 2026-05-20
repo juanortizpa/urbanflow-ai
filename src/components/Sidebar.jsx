@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import {
   MapPin, BarChart3, Navigation, Star, Calendar, User,
   Shield, Compass, Brain, Home, Settings, ChevronLeft, ChevronRight,
-  Zap, Bell,
+  Zap, Bell, LogOut,
 } from 'lucide-react';
 
 const navItems = [
@@ -21,7 +21,7 @@ const navItems = [
 ];
 
 export default function Sidebar({ isOpen, onToggle }) {
-  const { user, notifications } = useApp();
+  const { user, notifications, logout } = useApp();
   const location = useLocation();
 
   return (
@@ -93,7 +93,7 @@ export default function Sidebar({ isOpen, onToggle }) {
 
       {/* Bottom alerts indicator */}
       {isOpen && notifications.length > 0 && (
-        <div className="mx-3 mb-4 p-3 rounded-xl animate-fade-in"
+        <div className="mx-3 mb-2 p-3 rounded-xl animate-fade-in"
           style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
           <div className="flex items-center gap-2">
             <Bell size={14} className="text-red-400" />
@@ -101,6 +101,18 @@ export default function Sidebar({ isOpen, onToggle }) {
           </div>
         </div>
       )}
+
+      {/* Logout */}
+      <div className="px-2 pb-4">
+        <button
+          onClick={logout}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors ${!isOpen ? 'justify-center' : ''}`}
+          title={!isOpen ? 'Cerrar sesión' : undefined}
+        >
+          <LogOut size={18} className="flex-shrink-0" />
+          {isOpen && <span className="text-sm font-medium animate-fade-in">Cerrar sesión</span>}
+        </button>
+      </div>
     </aside>
   );
 }
