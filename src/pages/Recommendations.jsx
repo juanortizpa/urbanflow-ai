@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Brain, Cloud, CloudRain, Sun, Clock, DollarSign, Sparkles, RefreshCw, Filter } from 'lucide-react';
+import { Brain, Cloud, CloudRain, Sun, Clock, DollarSign, Sparkles, RefreshCw, Filter, MapPin, Star, TrendingUp } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getAIRecommendations, generateDayPlan } from '../utils/aiRecommendations';
 import RecommendationCard from '../components/RecommendationCard';
@@ -34,34 +34,34 @@ function AIReasonForPlace(place, context) {
   return reasons.slice(0, 2).join(' · ');
 }
 
+const PAGE_SIZE = 12;
+
 export default function Recommendations() {
-  const { places, user, currentWeather, timeContext, searchHistory } = useApp();
+  const { places, user, currentWeather, timeContext, searchHistory, userCoords, favorites } = useApp();
   const [activeTab, setActiveTab] = useState('ai');
   const [dayPlanConfig, setDayPlanConfig] = useState({ budget: 'medium', hours: 4, interests: ['cafes', 'restaurants'] });
   const [dayPlan, setDayPlan] = useState(null);
   const [generatingPlan, setGeneratingPlan] = useState(false);
-  const [aiScore, setAiScore] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const aiContext = useMemo(() => ({
-    timeContext, weather: currentWeather.current, user,
-    searchHistory, currentHour: new Date().getHours(),
-    budget: user.preferences.budget,
-  }), [timeContext, currentWeather, user, searchHistory]);
+    timeContext,
+    weather: currentWeather,
+    user,
+    searchHistory,
+    currentHour: new Date().getHours(),
+    budget: user?.preferences?.budget || 'medium',
+    userCoords,
+    favorites,
+  }), [timeContext, currentWeather, user, searchHistory, userCoords, favorites]);
 
-  const recommendations = useMemo(() =>
+  const allRecommendations = useMemo(() =>
     getAIRecommendations(places, aiContext),
     [places, aiContext]
   );
 
-  useEffect(() => {
-    const scores = recommendations.map((p, i) => ({
-      place: p,
-      score: Math.round(90 - i * 8 + Math.random() * 5),
-      reason: AIReasonForPlace(p, aiContext),
-      rank: i + 1,
-    }));
-    setAiScore(scores);
-  }, [recommendations, aiContext]);
+  const recommendations = allRecommendations.slice(0, visibleCount);
+  const hasMore = visibleCount < allRecommendations.length;
 
   const toggleInterest = (id) => {
     setDayPlanConfig(prev => ({
@@ -134,11 +134,32 @@ export default function Recommendations() {
 
       {activeTab === 'ai' && (
         <div className="space-y-4">
+          <p className="text-dark-400 text-xs">
+            {allRecommendations.length} lugares encontrados — mostrando {Math.min(visibleCount, allRecommendations.length)}
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {aiScore?.map(({ place, score, reason, rank }) => (
-              <RecommendationCard key={place.id} place={place} score={score} reason={reason} rank={rank} />
+            {recommendations.map((place, i) => (
+              <RecommendationCard
+                key={place.id}
+                place={place}
+                score={place.aiMatch || Math.max(10, 95 - i * 3)}
+                reason={place.aiReason || 'Recomendado para ti'}
+                rank={i + 1}
+              />
             ))}
           </div>
+          {hasMore && (
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-all"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}
+              >
+                <RefreshCw size={14} />
+                Cargar más ({allRecommendations.length - visibleCount} restantes)
+              </button>
+            </div>
+          )}
         </div>
       )}
 

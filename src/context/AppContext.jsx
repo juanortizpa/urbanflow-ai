@@ -10,7 +10,8 @@ import {
   arrayUnion, arrayRemove, serverTimestamp,
 } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../firebase/config';
-import { places, events, alerts, weatherConditions, trafficZones as initialTrafficZones } from '../data/mockData';
+import { places as curatedPlaces, events, alerts, weatherConditions, trafficZones as initialTrafficZones } from '../data/mockData';
+import { fetchCaliPlaces } from '../utils/overpassApi';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { predictTraffic } from '../utils/dijkstra';
 
@@ -83,10 +84,14 @@ export function AppProvider({ children }) {
   const [weatherLastUpdate, setWeatherLastUpdate] = useState(null);
   const [activeAlert, setActiveAlert] = useState(null);
   const [theme] = useState('dark');
+  const [osmPlaces, setOsmPlaces] = useState([]);
   const { coords: userCoords, error: geoError, loading: geoLoading } = useGeolocation();
   const weatherRetryRef = useRef(0);
 
   const currentHour = new Date().getHours();
+
+  // All places: curated + real OSM places
+  const places = [...curatedPlaces, ...osmPlaces];
 
   // ── Firebase Auth ───────────────────────────────────────────────────────────
 
@@ -237,6 +242,14 @@ export function AppProvider({ children }) {
     loadWeather();
     const interval = setInterval(loadWeather, 10 * 60 * 1000);
     return () => { cancelled = true; clearInterval(interval); };
+  }, []);
+
+  // ── Real Cali places from OpenStreetMap (Overpass API) ─────────────────────
+
+  useEffect(() => {
+    fetchCaliPlaces().then(osm => {
+      if (osm.length > 0) setOsmPlaces(osm);
+    });
   }, []);
 
   // ── Live traffic (every 60 s) ───────────────────────────────────────────────

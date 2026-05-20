@@ -11,6 +11,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { searchAddress, reverseGeocode } from '../utils/nominatim';
 import { getRoute, formatDistance, formatDuration, estimateCost } from '../utils/osrm';
+import { predictTraffic } from '../utils/dijkstra';
 
 const TRANSPORT_MODES = [
   { id: 'bus', label: 'MIO Bus', icon: Bus, color: '#3b82f6' },
@@ -236,10 +237,13 @@ export default function SmartRoutes() {
     setSelectedRouteIdx(0);
     setShowSteps(false);
     try {
+      const now = new Date();
+      const congestion = predictTraffic(now.getHours(), now.getDay());
       const result = await getRoute(
         { lat: originSelected.lat, lng: originSelected.lng },
         { lat: destSelected.lat, lng: destSelected.lng },
-        mode
+        mode,
+        congestion
       );
       setRoutes(result);
     } catch (err) {
