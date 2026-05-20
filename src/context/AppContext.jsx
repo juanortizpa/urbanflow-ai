@@ -110,47 +110,53 @@ export function AppProvider({ children }) {
     async function processUser(firebaseUser) {
       if (!firebaseUser) { setUser(null); setAuthLoading(false); return; }
       const ref = doc(db, 'users', firebaseUser.uid);
-      const snap = await getDoc(ref);
-      if (cancelled) return;
-      if (!snap.exists()) {
-        const profile = {
-          displayName: firebaseUser.displayName,
-          email: firebaseUser.email,
-          photoURL: firebaseUser.photoURL,
-          isPremium: false,
-          preferences: DEFAULT_PREFERENCES,
-          favorites: [],
-          searchHistory: [],
-          createdAt: serverTimestamp(),
-        };
-        await setDoc(ref, profile);
+      try {
+        const snap = await getDoc(ref);
         if (cancelled) return;
-        setFavorites([]);
-        setSearchHistory([]);
-        setUser({ uid: firebaseUser.uid, ...profile });
-      } else {
-        const data = snap.data();
-        setFavorites(data.favorites || []);
-        setSearchHistory(data.searchHistory || []);
-        setUser({
-          uid: firebaseUser.uid,
-          displayName: data.displayName || firebaseUser.displayName,
-          email: firebaseUser.email,
-          photoURL: data.photoURL || firebaseUser.photoURL,
-          isPremium: data.isPremium || false,
-          preferences: data.preferences || DEFAULT_PREFERENCES,
-        });
+        if (!snap.exists()) {
+          const profile = {
+            displayName: firebaseUser.displayName,
+            email: firebaseUser.email,
+            photoURL: firebaseUser.photoURL,
+            isPremium: false,
+            preferences: DEFAULT_PREFERENCES,
+            favorites: [],
+            searchHistory: [],
+            createdAt: serverTimestamp(),
+          };
+          await setDoc(ref, profile);
+          if (cancelled) return;
+          setFavorites([]);
+          setSearchHistory([]);
+          setUser({ uid: firebaseUser.uid, ...profile });
+        } else {
+          const data = snap.data();
+          setFavorites(data.favorites || []);
+          setSearchHistory(data.searchHistory || []);
+          setUser({
+            uid: firebaseUser.uid,
+            displayName: data.displayName || firebaseUser.displayName,
+            email: firebaseUser.email,
+            photoURL: data.photoURL || firebaseUser.photoURL,
+            isPremium: data.isPremium || false,
+            preferences: data.preferences || DEFAULT_PREFERENCES,
+          });
+        }
+        setAuthLoading(false);
+      } catch (err) {
+        console.error('Firestore error during auth:', err.code, err.message);
+        setUser(null);
+        setAuthLoading(false);
       }
-      setAuthLoading(false);
     }
 
     async function init() {
-      // Intenta procesar el resultado de un redirect previo (fallback de popup bloqueado)
       try {
         await getRedirectResult(auth);
-      } catch { /* no-op */ }
+      } catch (err) {
+        console.error('Redirect result error:', err.code, err.message);
+      }
       if (cancelled) return;
-      // onAuthStateChanged cubre tanto popup exitoso como redirect exitoso
       unsub = onAuthStateChanged(auth, (firebaseUser) => {
         if (!cancelled) processUser(firebaseUser);
       });
