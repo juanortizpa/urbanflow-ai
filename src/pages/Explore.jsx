@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, Filter, Grid, List, MapPin, SlidersHorizontal, X, TrendingUp } from 'lucide-react';
+import { Search, Grid, List, MapPin, SlidersHorizontal, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { searchPlaces } from '../utils/searchEngine';
 import PlaceCard from '../components/PlaceCard';
@@ -28,7 +28,7 @@ const sortOptions = [
 
 export default function Explore() {
   const location = useLocation();
-  const { places, addToSearchHistory } = useApp();
+  const { places, addToSearchHistory, openPlaceDetail } = useApp();
   const [query, setQuery] = useState(location.state?.query || '');
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortBy, setSortBy] = useState('rating');
@@ -37,6 +37,8 @@ export default function Explore() {
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState('all');
   const [minRating, setMinRating] = useState(0);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 12;
 
   useEffect(() => {
     if (location.state?.query) {
@@ -65,6 +67,12 @@ export default function Explore() {
 
     return result;
   }, [places, query, activeCategory, sortBy, priceRange, minRating]);
+
+  // Reset page when filters change
+  useEffect(() => { setPage(1); }, [query, activeCategory, sortBy, priceRange, minRating]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -185,13 +193,54 @@ export default function Explore() {
           <p className="text-dark-500 text-sm mt-1">Intenta con otra busqueda o categoria</p>
         </div>
       ) : (
-        <div className={viewMode === 'grid'
-          ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
-          : 'space-y-3'}>
-          {filtered.map(place => (
-            <PlaceCard key={place.id} place={place} compact={viewMode === 'list'} />
-          ))}
-        </div>
+        <>
+          <div className={viewMode === 'grid'
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
+            : 'space-y-3'}>
+            {paginated.map(place => (
+              <PlaceCard key={place.id} place={place} compact={viewMode === 'list'}
+                onClick={() => openPlaceDetail(place)} />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-xl btn-ghost disabled:opacity-40 disabled:cursor-not-allowed">
+                <ChevronLeft size={16} />
+              </button>
+              <div className="flex items-center gap-1.5">
+                {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                  let p;
+                  if (totalPages <= 7) p = i + 1;
+                  else if (page <= 4) p = i + 1;
+                  else if (page >= totalPages - 3) p = totalPages - 6 + i;
+                  else p = page - 3 + i;
+                  return (
+                    <button key={p} onClick={() => setPage(p)}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
+                        p === page ? 'bg-blue-500/25 text-blue-400 border border-blue-500/40' : 'text-dark-400 hover:text-white hover:bg-white/8'
+                      }`}>
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="p-2 rounded-xl btn-ghost disabled:opacity-40 disabled:cursor-not-allowed">
+                <ChevronRight size={16} />
+              </button>
+              <span className="text-dark-500 text-xs">
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+              </span>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

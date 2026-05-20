@@ -7,6 +7,7 @@ import {
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { CALI_EVENTS } from '../data/caliEvents';
 
 // Fix leaflet icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -17,133 +18,6 @@ L.Icon.Default.mergeOptions({
 });
 
 const CALI_CENTER = [3.4516, -76.5325];
-
-const CALI_EVENTS = [
-  {
-    id: 1, title: 'Noche de Salsa en Topa Tolondra', category: 'music',
-    venue: 'Topa Tolondra', address: 'Av. 5 Norte #23-52, Cali',
-    lat: 3.4712, lng: -76.5298,
-    schedule: 'Jueves a Domingo', time: '9:00 PM - 3:00 AM',
-    price: 20000, currency: 'COP', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'La mejor noche de salsa calena con orquesta en vivo, un ambiente inigualable y el mejor ron colombiano.',
-    tags: ['salsa', 'nightlife', 'live music', 'dancing'], rating: 4.9,
-    isRecurring: true, trafficImpact: 'medium',
-  },
-  {
-    id: 2, title: 'Mercado Gastronomico Granada', category: 'food',
-    venue: 'Parque de Granada', address: 'Carrera 35 #3-41, Cali',
-    lat: 3.4662, lng: -76.5315,
-    schedule: 'Sabados y Domingos', time: '10:00 AM - 6:00 PM',
-    price: 0, currency: 'COP', image: 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'El mercado de artesanias y gastronomia mas completo de Cali, con mas de 80 emprendedores locales y musica en vivo.',
-    tags: ['food', 'market', 'artisan', 'family', 'free'], rating: 4.7,
-    isRecurring: true, trafficImpact: 'low',
-  },
-  {
-    id: 3, title: 'Festival de Cine al Aire Libre', category: 'culture',
-    venue: 'Parque del Perro', address: 'El Penon, Cali',
-    lat: 3.4681, lng: -76.5334,
-    schedule: 'Viernes', time: '7:00 PM - 10:00 PM',
-    price: 0, currency: 'COP', image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'Proyecciones gratuitas de cine latinoamericano bajo las estrellas, con picnic y food trucks alrededor.',
-    tags: ['culture', 'cinema', 'outdoor', 'free', 'family'], rating: 4.6,
-    isRecurring: true, trafficImpact: 'low',
-  },
-  {
-    id: 4, title: 'Clase Abierta de Salsa — Swing Latino', category: 'sports',
-    venue: 'Swing Latino Dance Academy', address: 'Calle 5 #38-71, Cali',
-    lat: 3.4523, lng: -76.5378,
-    schedule: 'Martes y Jueves', time: '6:00 PM - 8:00 PM',
-    price: 15000, currency: 'COP', image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'Clases abiertas para todos los niveles en la academia de salsa mas reconocida de Cali. Sin experiencia previa necesaria.',
-    tags: ['salsa', 'dance', 'sports', 'learning'], rating: 4.8,
-    isRecurring: true, trafficImpact: 'low',
-  },
-  {
-    id: 5, title: 'Tour Nocturno por las Salsotecas de Cali', category: 'tourism',
-    venue: 'Juanchito, Cali', address: 'Via Cali-Candelaria Km 3',
-    lat: 3.4350, lng: -76.4680,
-    schedule: 'Viernes y Sabados', time: '8:00 PM - 2:00 AM',
-    price: 35000, currency: 'COP', image: 'https://images.unsplash.com/photo-1543007630-9359431db9f3?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'Recorre las salsotecas mas iconicas de Juanchito, la meca mundial de la salsa, con guia local incluido.',
-    tags: ['salsa', 'tourism', 'nightlife', 'culture'], rating: 4.8,
-    isRecurring: true, trafficImpact: 'high',
-  },
-  {
-    id: 6, title: 'Ciclovia Dominical de Cali', category: 'sports',
-    venue: 'Av. Roosevelt y conexiones', address: 'Cali — Av. Roosevelt',
-    lat: 3.4516, lng: -76.5325,
-    schedule: 'Domingos', time: '7:00 AM - 1:00 PM',
-    price: 0, currency: 'COP', image: 'https://images.unsplash.com/photo-1541625602538-5f66ab6da7de?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'Mas de 40km de vias habilitadas exclusivamente para ciclistas, peatones y patinadores todos los domingos.',
-    tags: ['sports', 'cycling', 'outdoor', 'free', 'family', 'health'], rating: 4.9,
-    isRecurring: true, trafficImpact: 'low',
-  },
-  {
-    id: 7, title: 'Exposicion Arte Contemporaneo — La Tertulia', category: 'culture',
-    venue: 'Museo de Arte Moderno La Tertulia', address: 'Av. Colombia #5-105 Oeste, Cali',
-    lat: 3.4616, lng: -76.5485,
-    schedule: 'Martes a Domingo', time: '9:00 AM - 6:00 PM',
-    price: 5000, currency: 'COP', image: 'https://images.unsplash.com/photo-1536924940846-227afb31e2a5?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'Exposicion permanente del museo de arte mas importante del suroccidente colombiano mas exposiciones temporales rotativas.',
-    tags: ['culture', 'art', 'museum', 'history', 'education'], rating: 4.5,
-    isRecurring: true, trafficImpact: 'low',
-  },
-  {
-    id: 8, title: 'Feria Gastronomica Sabores del Valle', category: 'food',
-    venue: 'Centro Comercial Chipichape', address: 'Calle 38 Norte, Cali',
-    lat: 3.4790, lng: -76.5258,
-    schedule: 'Primer fin de semana del mes', time: '11:00 AM - 8:00 PM',
-    price: 0, currency: 'COP', image: 'https://images.unsplash.com/photo-1555939594-7d08fd45dc0e?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'Feria mensual con los mejores restaurantes y emprendedores de comida calena ofreciendo muestras y platos especiales.',
-    tags: ['food', 'culture', 'family', 'free', 'local'], rating: 4.6,
-    isRecurring: true, trafficImpact: 'medium',
-  },,
-  {
-    id: 9, title: 'Festival de Salsa de Cali — Ensayos Abiertos', category: 'music',
-    venue: 'Plaza de Caicedo', address: 'Carrera 4 #11-29, Centro, Cali',
-    lat: 3.4508, lng: -76.5329,
-    schedule: 'Diciembre', time: '4:00 PM - 10:00 PM',
-    price: 0, currency: 'COP',
-    image: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'Los ensayos y presentaciones previas al Festival Mundial de Salsa de Cali, con participación de academias y grupos de toda la ciudad.',
-    tags: ['salsa', 'festival', 'free', 'culture', 'dancing'], rating: 4.9,
-    isRecurring: false, trafficImpact: 'high',
-  },
-  {
-    id: 10, title: 'Feria de Cali — Cabalgata y Salsaódromo', category: 'culture',
-    venue: 'Av. 6N y Centro de Cali', address: 'Avenida 6 Norte, Cali',
-    lat: 3.4780, lng: -76.5270,
-    schedule: 'Del 25 al 30 de Diciembre', time: 'Todo el día',
-    price: 0, currency: 'COP',
-    image: 'https://images.unsplash.com/photo-1580747025283-a33e34826d5f?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'La Feria de Cali es la celebración más grande de la ciudad, con la Cabalgata del 28, el Salsaódromo del 29 y conciertos gratuitos en el Estadio Olímpico.',
-    tags: ['feria', 'salsa', 'culture', 'free', 'festival', 'family'], rating: 5.0,
-    isRecurring: true, trafficImpact: 'high',
-  },
-  {
-    id: 11, title: 'Petronio Álvarez — Festival de Música del Pacífico', category: 'music',
-    venue: 'Estadio Deportivo Cali', address: 'Av. Cañasgordas #33-25, Cali',
-    lat: 3.4200, lng: -76.5550,
-    schedule: 'Agosto', time: '4:00 PM - 2:00 AM',
-    price: 40000, currency: 'COP',
-    image: 'https://images.unsplash.com/photo-1501386761578-eaa54b2b62d7?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'El festival más importante de música y cultura afropacífica de Colombia, con marimba, chirimía, violines caucanos y gastronomía del Pacífico.',
-    tags: ['pacifico', 'afro', 'culture', 'music', 'festival'], rating: 4.9,
-    isRecurring: true, trafficImpact: 'high',
-  },
-  {
-    id: 12, title: 'Tarde en el Zoológico de Cali', category: 'tourism',
-    venue: 'Zoológico de Cali', address: 'Carrera 2 Oeste #14-97, Cali',
-    lat: 3.4480, lng: -76.5520,
-    schedule: 'Martes a Domingo', time: '9:00 AM - 5:00 PM',
-    price: 25000, currency: 'COP',
-    image: 'https://images.unsplash.com/photo-1503066211613-c17ebc9daef0?auto=format&fit=crop&w=400&h=250&q=80',
-    description: 'El Zoológico de Cali es uno de los mejores de América Latina con más de 4.500 animales de 250 especies. Orillas del Río Cali en el barrio Santa Teresita.',
-    tags: ['zoo', 'family', 'nature', 'animals', 'tourism', 'outdoor'], rating: 4.8,
-    isRecurring: true, trafficImpact: 'low',
-  },
-];
 
 const CATEGORY_CONFIG = {
   music:   { label: 'Musica',      icon: Music,    color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)' },

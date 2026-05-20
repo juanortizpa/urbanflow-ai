@@ -13,6 +13,7 @@ import Favorites from '../pages/Favorites';
 import Emergency from '../pages/Emergency';
 import Profile from '../pages/Profile';
 import Admin from '../pages/Admin';
+import Agenda from '../pages/Agenda';
 
 const Spinner = () => (
   <div style={{
@@ -57,6 +58,7 @@ export default function AppRoutes() {
         <Route path="favorites" element={<Favorites />} />
         <Route path="emergency" element={<Emergency />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="agenda" element={<Agenda />} />
         <Route path="admin" element={<Admin />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

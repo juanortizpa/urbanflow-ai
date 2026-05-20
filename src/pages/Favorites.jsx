@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import PlaceCard from '../components/PlaceCard';
 
 export default function Favorites() {
-  const { favorites, places, addToFavorites, searchHistory } = useApp();
+  const { favorites, places, addToFavorites, searchHistory, openPlaceDetail } = useApp();
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState('rating');
   const [viewMode, setViewMode] = useState('grid');
@@ -110,7 +110,7 @@ export default function Favorites() {
               ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
               : 'space-y-3'}>
               {sorted.map(place => (
-                <PlaceCard key={place.id} place={place} compact={viewMode === 'list'} />
+                <PlaceCard key={place.id} place={place} compact={viewMode === 'list'} onClick={() => openPlaceDetail(place)} />
               ))}
             </div>
           )}

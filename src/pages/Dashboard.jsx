@@ -21,6 +21,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Dashboard() {
   const [period, setPeriod] = useState('week');
+  const [showAllTraffic, setShowAllTraffic] = useState(false);
   const { liveTrafficZones, places } = useApp();
   const { kpis, trafficByHour, popularZones, weeklyActivity, categoryDistribution } = analyticsData;
 
@@ -185,11 +186,11 @@ export default function Dashboard() {
             <Activity size={16} className="text-yellow-400" />
             Estado del Trafico
           </h3>
-          <div className="space-y-3">
-            {liveTrafficZones.map(zone => {
+          <div className="space-y-2">
+            {(showAllTraffic ? liveTrafficZones : liveTrafficZones.slice(0, 5)).map(zone => {
               const color = zone.level === 'critical' ? '#ef4444' : zone.level === 'high' ? '#f97316' : zone.level === 'medium' ? '#f59e0b' : '#22c55e';
               return (
-                <div key={zone.id} className="p-3 rounded-xl" style={{ background: `${color}10`, border: `1px solid ${color}20` }}>
+                <div key={zone.id} className="p-2.5 rounded-xl" style={{ background: `${color}10`, border: `1px solid ${color}20` }}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-white text-xs font-semibold">{zone.name}</span>
                     <span className="text-xs font-bold" style={{ color }}>{zone.congestion}%</span>
@@ -197,11 +198,15 @@ export default function Dashboard() {
                   <div className="h-1.5 bg-dark-700 rounded-full overflow-hidden">
                     <div className="h-full rounded-full" style={{ width: `${zone.congestion}%`, background: color }} />
                   </div>
-                  <p className="text-dark-500 text-xs mt-1">{zone.description}</p>
                 </div>
               );
             })}
           </div>
+          <button
+            onClick={() => setShowAllTraffic(v => !v)}
+            className="mt-3 w-full text-xs text-blue-400 hover:text-blue-300 py-1.5 rounded-lg hover:bg-blue-500/10 transition-all border border-blue-500/20">
+            {showAllTraffic ? `Mostrar menos` : `Ver mas (${liveTrafficZones.length - 5} zonas mas)`}
+          </button>
         </div>
       </div>
 

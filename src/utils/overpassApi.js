@@ -82,6 +82,7 @@ const OSM_CATEGORY_MAP = {
   library:       { category: 'culture',     tags: ['library', 'books', 'study'] },
   gym:           { category: 'sports',      tags: ['gym', 'fitness', 'health'] },
   sports_centre: { category: 'sports',      tags: ['sports', 'fitness'] },
+  fitness_centre:{ category: 'sports',      tags: ['gym', 'fitness', 'health'] },
   swimming_pool: { category: 'sports',      tags: ['swimming', 'fitness', 'water'] },
   park:          { category: 'parks',       tags: ['outdoor', 'nature', 'family'] },
   garden:        { category: 'parks',       tags: ['outdoor', 'nature', 'relaxation'] },

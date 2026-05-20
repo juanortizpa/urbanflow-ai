@@ -19,7 +19,7 @@ const quickActions = [
 ];
 
 export default function Home() {
-  const { user, places, currentWeather, timeContext, searchHistory, notifications } = useApp();
+  const { user, places, currentWeather, timeContext, searchHistory, notifications, openPlaceDetail } = useApp();
   const navigate = useNavigate();
   const [recommendations, setRecommendations] = useState([]);
   const [greeting, setGreeting] = useState('');
@@ -63,7 +63,7 @@ export default function Home() {
           </h1>
           <p className="text-dark-400 text-lg mb-6 max-w-xl">
             Tu ciudad inteligente en tiempo real. {Math.round(currentWeather.temp)}°C afuera —{' '}
-            {currentWeather.description.toLowerCase()}.
+            {currentWeather.description}.
           </p>
 
           <div className="flex gap-3 flex-wrap">
@@ -158,7 +158,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {recommendations.map(place => (
-              <PlaceCard key={place.id} place={place} onClick={() => navigate('/explore')} />
+              <PlaceCard key={place.id} place={place} onClick={() => openPlaceDetail(place)} />
             ))}
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function Home() {
           <div className="space-y-2">
             {places.filter(p => p.trend === 'up').slice(0, 3).map((place, i) => (
               <div key={place.id} className="glass-card-hover p-3 flex items-center gap-3"
-                onClick={() => navigate('/explore')}>
+                onClick={() => openPlaceDetail(place)}>
                 <span className="text-dark-400 text-sm font-bold w-5">#{i + 1}</span>
                 <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
                   <img src={place.image} alt={place.name} className="w-full h-full object-cover" />

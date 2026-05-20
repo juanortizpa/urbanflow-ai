@@ -78,6 +78,12 @@ export function AppProvider({ children }) {
   const [mapLayer, setMapLayer] = useState('standard');
   // notifications is now dynamic — no static state needed
   const [isLoading, setIsLoading] = useState(false);
+  // Agenda persistida en localStorage
+  const [agenda, setAgenda] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('uf_agenda') || '[]'); } catch { return []; }
+  });
+  // Place detail modal
+  const [detailPlace, setDetailPlace] = useState(null);
   const [currentWeather, setCurrentWeather] = useState(weatherConditions);
   const [liveTrafficZones, setLiveTrafficZones] = useState(() => computeLiveTraffic(initialTrafficZones));
   const [weatherLive, setWeatherLive] = useState(false);
@@ -209,6 +215,26 @@ export function AppProvider({ children }) {
     if (currentHour >= 17 && currentHour < 21) return 'evening';
     return 'night';
   }, [currentHour]);
+
+  const addToAgenda = useCallback((place, date, time, notes = '') => {
+    const item = { id: `${place.id}_${Date.now()}`, place, date, time, notes, addedAt: Date.now() };
+    setAgenda(prev => {
+      const next = [...prev, item];
+      localStorage.setItem('uf_agenda', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const removeFromAgenda = useCallback((itemId) => {
+    setAgenda(prev => {
+      const next = prev.filter(i => i.id !== itemId);
+      localStorage.setItem('uf_agenda', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const openPlaceDetail = useCallback((place) => setDetailPlace(place), []);
+  const closePlaceDetail = useCallback(() => setDetailPlace(null), []);
 
   const dismissNotification = useCallback((id) => {}, []);
 
@@ -357,6 +383,8 @@ export function AppProvider({ children }) {
     mapLayer, setMapLayer,
     notifications: dynamicNotifications, dismissNotification,
     isLoading, setIsLoading,
+    agenda, addToAgenda, removeFromAgenda,
+    detailPlace, openPlaceDetail, closePlaceDetail,
     currentWeather, setCurrentWeather,
     weatherLive, weatherLastUpdate,
     activeAlert, showAlert,

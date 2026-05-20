@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import SmartAlerts from '../components/SmartAlerts';
+import PlaceDetailModal from '../components/PlaceDetailModal';
 import { useApp } from '../context/AppContext';
 
 export default function MainLayout() {
@@ -21,6 +22,7 @@ export default function MainLayout() {
         </main>
         {activeAlert && <SmartAlerts alert={activeAlert} />}
       </div>
+      <PlaceDetailModal />
     </div>
   );
 }

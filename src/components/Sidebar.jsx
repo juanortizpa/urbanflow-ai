@@ -3,8 +3,9 @@ import { useApp } from '../context/AppContext';
 import {
   MapPin, BarChart3, Navigation, Star, Calendar, User,
   Shield, Compass, Brain, Home, Settings, ChevronLeft, ChevronRight,
-  Zap, Bell, LogOut,
+  Zap, Bell, LogOut, CalendarDays,
 } from 'lucide-react';
+import { CALI_EVENTS } from '../data/caliEvents';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Inicio', badge: null },
@@ -13,7 +14,8 @@ const navItems = [
   { path: '/routes', icon: Navigation, label: 'SmartFlow', badge: null },
   { path: '/dashboard', icon: BarChart3, label: 'Dashboard', badge: null },
   { path: '/recommendations', icon: Brain, label: 'IA Recomenda', badge: 'AI' },
-  { path: '/events', icon: Calendar, label: 'Eventos', badge: '5' },
+  { path: '/events', icon: Calendar, label: 'Eventos', badge: String(CALI_EVENTS.length) },
+  { path: '/agenda', icon: CalendarDays, label: 'Mi Agenda', badge: null },
   { path: '/favorites', icon: Star, label: 'Favoritos', badge: null },
   { path: '/emergency', icon: Shield, label: 'Emergencia', badge: null },
   { path: '/profile', icon: User, label: 'Perfil', badge: null },
