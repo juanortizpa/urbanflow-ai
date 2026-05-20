@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   onAuthStateChanged,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
 } from 'firebase/auth';
 import {
@@ -90,7 +91,7 @@ export function AppProvider({ children }) {
   // ── Firebase Auth ───────────────────────────────────────────────────────────
 
   const login = useCallback(async () => {
-    await signInWithPopup(auth, googleProvider);
+    await signInWithRedirect(auth, googleProvider);
   }, []);
 
   const logout = useCallback(async () => {
@@ -102,6 +103,9 @@ export function AppProvider({ children }) {
 
   // Listen to auth state and load Firestore profile
   useEffect(() => {
+    // Completar el flujo de redirect si el usuario viene de Google
+    getRedirectResult(auth).catch(() => {});
+
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const ref = doc(db, 'users', firebaseUser.uid);
