@@ -4,7 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
 import { TrendingUp, Users, MapPin, Search, Star, Activity, Zap, Clock } from 'lucide-react';
-import { analyticsData, places } from '../data/mockData';
+import { analyticsData } from '../data/mockData';
 import { useApp } from '../context/AppContext';
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -21,14 +21,18 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Dashboard() {
   const [period, setPeriod] = useState('week');
-  const { liveTrafficZones } = useApp();
+  const { liveTrafficZones, places } = useApp();
   const { kpis, trafficByHour, popularZones, weeklyActivity, categoryDistribution } = analyticsData;
+
+  const avgCongestion = liveTrafficZones.length > 0
+    ? Math.round(liveTrafficZones.reduce((s, z) => s + z.congestion, 0) / liveTrafficZones.length)
+    : kpis.avgTraffic;
 
   const kpiCards = [
     { label: 'Usuarios Activos', value: kpis.activeUsers.toLocaleString(), change: '+12.5%', icon: Users, color: '#3b82f6', trend: 'up' },
-    { label: 'Lugares Registrados', value: kpis.totalPlaces, change: '+3 nuevos', icon: MapPin, color: '#06b6d4', trend: 'up' },
+    { label: 'Lugares Registrados', value: places.length.toLocaleString(), change: '+3 nuevos', icon: MapPin, color: '#06b6d4', trend: 'up' },
     { label: 'Busquedas Diarias', value: kpis.dailySearches.toLocaleString(), change: '+8.2%', icon: Search, color: '#8b5cf6', trend: 'up' },
-    { label: 'Trafico Promedio', value: `${kpis.avgTraffic}%`, change: '-5%', icon: Activity, color: '#f59e0b', trend: 'down' },
+    { label: 'Trafico Promedio', value: `${avgCongestion}%`, change: '-5%', icon: Activity, color: '#f59e0b', trend: 'down' },
     { label: 'Satisfaccion', value: `${kpis.satisfactionRate}%`, change: '+2%', icon: Star, color: '#10b981', trend: 'up' },
     { label: 'Nuevos Lugares', value: kpis.newPlaces, change: 'este mes', icon: Zap, color: '#f43f5e', trend: 'up' },
   ];

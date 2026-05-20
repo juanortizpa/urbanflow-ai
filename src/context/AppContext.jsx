@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   onAuthStateChanged,
   signInWithPopup,
@@ -76,7 +76,7 @@ export function AppProvider({ children }) {
   const [searchHistory, setSearchHistory] = useState([]);
   const [activeFilters, setActiveFilters] = useState({ category: 'all', priceRange: 'all', rating: 0 });
   const [mapLayer, setMapLayer] = useState('standard');
-  const [notifications, setNotifications] = useState(alerts);
+  // notifications is now dynamic — no static state needed
   const [isLoading, setIsLoading] = useState(false);
   const [currentWeather, setCurrentWeather] = useState(weatherConditions);
   const [liveTrafficZones, setLiveTrafficZones] = useState(() => computeLiveTraffic(initialTrafficZones));
@@ -210,9 +210,7 @@ export function AppProvider({ children }) {
     return 'night';
   }, [currentHour]);
 
-  const dismissNotification = useCallback((id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
+  const dismissNotification = useCallback((id) => {}, []);
 
   const showAlert = useCallback((message, type = 'info') => {
     setActiveAlert({ message, type, id: Date.now() });
@@ -275,6 +273,78 @@ export function AppProvider({ children }) {
     return () => clearInterval(interval);
   }, []);
 
+  // ── Dynamic notifications based on live traffic + weather + time ───────────
+
+  const dynamicNotifications = useMemo(() => {
+    const notifs = [];
+    const hour = new Date().getHours();
+
+    // Alerta de zona critica de trafico
+    const critical = liveTrafficZones.filter(z => z.level === 'critical');
+    if (critical.length > 0) {
+      notifs.push({
+        id: `tc_${critical[0].id}`, type: 'traffic', severity: 'critical',
+        message: `Congestión crítica: ${critical[0].name} al ${critical[0].congestion}% — ${critical[0].description}`,
+        time: 'ahora', icon: 'alert',
+      });
+    }
+
+    // Alerta de zona de trafico alto
+    const high = liveTrafficZones.filter(z => z.level === 'high' && z.congestion > 70);
+    if (high.length > 0 && notifs.length < 2) {
+      notifs.push({
+        id: `th_${high[0].id}`, type: 'traffic', severity: 'warning',
+        message: `Tráfico alto en ${high[0].name} (${high[0].congestion}%) — considera salir 15 min antes`,
+        time: 'ahora', icon: 'traffic',
+      });
+    }
+
+    // Hora pico
+    if (hour >= 7 && hour <= 9) {
+      notifs.push({
+        id: 'rush_am', type: 'traffic', severity: 'warning',
+        message: 'Hora pico matutina activa (7-9am) — MIO con alta demanda, Av. 6N y Calle 5 congestionadas',
+        time: 'activo', icon: 'traffic',
+      });
+    } else if (hour >= 17 && hour <= 19) {
+      notifs.push({
+        id: 'rush_pm', type: 'traffic', severity: 'warning',
+        message: 'Hora pico vespertina (5-7pm) — evita el Centro Histórico y la Av. Roosevelt',
+        time: 'activo', icon: 'traffic',
+      });
+    }
+
+    // Clima
+    const weatherCurrent = currentWeather?.current || currentWeather;
+    if (weatherCurrent === 'rainy') {
+      notifs.push({
+        id: 'rain', type: 'weather', severity: 'warning',
+        message: `Lluvia activa en Cali (${currentWeather?.temp || 24}°C) — aceras resbaladizas, precaución al conducir`,
+        time: 'en curso', icon: 'weather',
+      });
+    }
+
+    // Ciclovia dominical
+    if (new Date().getDay() === 0) {
+      notifs.push({
+        id: 'ciclovia', type: 'event', severity: 'info',
+        message: 'Ciclovía dominical activa — 40km de vías cerradas. Av. Roosevelt y Av. Colombia sin carros hasta la 1pm',
+        time: 'hoy', icon: 'event',
+      });
+    }
+
+    // Noche
+    if (hour >= 23 || hour < 5) {
+      notifs.push({
+        id: 'night_safety', type: 'info', severity: 'info',
+        message: 'Modo nocturno activo — circula por zonas iluminadas, usa Uber/InDriver para mayor seguridad',
+        time: 'ahora', icon: 'info',
+      });
+    }
+
+    return notifs.slice(0, 5);
+  }, [liveTrafficZones, currentWeather]);
+
   // ── Context value ───────────────────────────────────────────────────────────
 
   const value = {
@@ -285,7 +355,7 @@ export function AppProvider({ children }) {
     searchHistory, addToSearchHistory,
     activeFilters, setActiveFilters,
     mapLayer, setMapLayer,
-    notifications, dismissNotification,
+    notifications: dynamicNotifications, dismissNotification,
     isLoading, setIsLoading,
     currentWeather, setCurrentWeather,
     weatherLive, weatherLastUpdate,

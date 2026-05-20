@@ -5,7 +5,7 @@ import {
   AlertTriangle, Clock, Star, ArrowRight, Shield, Calendar, BarChart3,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { analyticsData, alerts as mockAlerts } from '../data/mockData';
+import { analyticsData } from '../data/mockData';
 import { getAIRecommendations } from '../utils/aiRecommendations';
 import PlaceCard from '../components/PlaceCard';
 
@@ -19,7 +19,7 @@ const quickActions = [
 ];
 
 export default function Home() {
-  const { user, places, currentWeather, timeContext, searchHistory } = useApp();
+  const { user, places, currentWeather, timeContext, searchHistory, notifications } = useApp();
   const navigate = useNavigate();
   const [recommendations, setRecommendations] = useState([]);
   const [greeting, setGreeting] = useState('');
@@ -103,7 +103,7 @@ export default function Home() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Usuarios Activos', value: kpis.activeUsers.toLocaleString(), icon: Users, color: '#3b82f6', change: '+12%' },
-          { label: 'Lugares', value: kpis.totalPlaces, icon: MapPin, color: '#06b6d4', change: '+3' },
+          { label: 'Lugares', value: places.length, icon: MapPin, color: '#06b6d4', change: '+3' },
           { label: 'Busquedas Hoy', value: kpis.dailySearches.toLocaleString(), icon: Search, color: '#8b5cf6', change: '+8%' },
           { label: 'Satisfaccion', value: `${kpis.satisfactionRate}%`, icon: Star, color: '#10b981', change: '+2%' },
         ].map(({ label, value, icon: Icon, color, change }) => (
@@ -170,7 +170,7 @@ export default function Home() {
             Alertas Activas
           </h2>
           <div className="space-y-3">
-            {mockAlerts.map(alert => (
+            {notifications.map(alert => (
               <div key={alert.id} className="glass-card p-3 flex items-start gap-3">
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${
                   alert.severity === 'critical' ? 'bg-red-400 animate-pulse' :

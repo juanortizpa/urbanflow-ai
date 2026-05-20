@@ -10,6 +10,59 @@ const OVERPASS_MIRRORS = [
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
 ];
 
+// Imagenes reales de Unsplash por categoria (no picsum)
+const CATEGORY_IMAGES = {
+  restaurants: [
+    'photo-1504674900247-0877df9cc836',
+    'photo-1565299585323-38d6b0865b47',
+    'photo-1567620905732-2d1ec7ab7445',
+    'photo-1414235077428-338989a2e8c0',
+  ],
+  cafes: [
+    'photo-1495474472287-4d71bcdd2085',
+    'photo-1509042239860-f550ce710b93',
+    'photo-1524350876685-274059332603',
+    'photo-1517705008128-361805f42e86',
+  ],
+  bars: [
+    'photo-1566073771259-6a8506099945',
+    'photo-1543007630-9359431db9f3',
+    'photo-1514362545857-3bc16c4c7d1b',
+    'photo-1571019613454-1cb2f99b2d8b',
+  ],
+  desserts: [
+    'photo-1563805042-7684c019e1cb',
+    'photo-1501443762994-82bd5dace89a',
+    'photo-1488900128323-21503983a07e',
+  ],
+  parks: [
+    'photo-1506905925346-21bda4d32df4',
+    'photo-1441974231531-c6227db76b6e',
+    'photo-1531366936337-7c912a4589a7',
+  ],
+  culture: [
+    'photo-1518998053901-5348d3961a04',
+    'photo-1536924940846-227afb31e2a5',
+    'photo-1569974498991-d37c34938dcd',
+  ],
+  sports: [
+    'photo-1534438327276-14e5300c3a48',
+    'photo-1571019614242-c5c5dee9f50b',
+    'photo-1517838277536-f5f99be501cd',
+  ],
+  shopping: [
+    'photo-1555529669-e69e7aa0ba9a',
+    'photo-1519996529931-28324d5a630e',
+    'photo-1483985988355-763728e1935b',
+  ],
+};
+
+function getImageForCategory(category, seed) {
+  const pool = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.culture;
+  const idx = Math.abs(seed) % pool.length;
+  return `https://images.unsplash.com/${pool[idx]}?auto=format&fit=crop&w=400&h=250&q=80`;
+}
+
 const OSM_CATEGORY_MAP = {
   restaurant:    { category: 'restaurants', tags: ['food', 'dining'] },
   cafe:          { category: 'cafes',       tags: ['coffee', 'work', 'cozy'] },
@@ -168,7 +221,7 @@ export async function fetchCaliPlaces() {
         trend: rating >= 4.4 ? 'up' : 'stable',
         price: estimatePrice(amenity),
         openHours: el.tags.opening_hours || '9:00-20:00',
-        image: `https://picsum.photos/seed/osm${el.id}/400/250`,
+        image: getImageForCategory(category, el.id % 1000),
         reviews: [],
         menu: [],
         popularAt: popularAtByCategory(category),
